@@ -37,51 +37,50 @@ get_worker_list：获取其他工作人员的姓名和个人链接并存成字�
 
 
 '''进入搜索页面'''
-def get_find_url():
-
-    a = open('./data/2010.txt', 'r').readlines()
-    year = '2010'
-    data = 1
-    data_info_dict = {}
-    for line in a:
-        e = line.replace('', '\t').split('\t',)
-        '''把电影名（字符串形式）转成ｕｒｌ编码'''
-        # print urllib.quote(e[2])
-        # print e[2]
-        info = 0
-        movie_name = e[0]
-        movie_id = e[1].replace('\n','')
-        url = 'http://search.mtime.com/search/?q='+urllib.quote(e[0])+year
-
-
-        data_info_dict['_id'] = movie_id
-        data_info_dict['year'] = year
-        data_info_dict['movie_name'] = movie_name
-
-
-
-        print '==============='
-        print data
-        data += 1
-        # print url
-        # print movie_name
-        # print movie_id
-
-        '''
-        断点重续，跳过已经爬完的电影进入下一个电影
-        '''
-        with open('./2010/had_checked.txt','r+') as f:
-            for i in f.readlines():
-                if i.replace('\n', '')==url:
-                    info = 1
-                    continue
-        if info==0:
-            get_right_url(url, data_info_dict)
-        else:
-            continue
+  def get_find_url():
+  
+  
+      a = open('./data/2010.txt', 'r').readlines()
+      year = '2010'
+      data = 1
+      data_info_dict = {}
+      for line in a:
+          e = line.replace('', '\t').split('\t',)
+          '''把电影名（字符串形式）转成ｕｒｌ编码'''
+          # print urllib.quote(e[2])
+          # print e[2]
+          info = 0
+          movie_name = e[0]
+          movie_id = e[1].replace('\n','')
+          url = 'http://search.mtime.com/search/?q='+urllib.quote(e[0])+year
+          data_info_dict['_id'] = movie_id
+          data_info_dict['year'] = year
+          data_info_dict['movie_name'] = movie_name
+          print '==============='
+          print data
+          data += 1
+          # print url
+          # print movie_name
+          # print movie_id
+          '''
+          断点重续，跳过已经爬完的电影进入下一个电影
+          '''
+          with open('./2010/had_checked.txt','r+') as f:
+              for i in f.readlines():
+                  if i.replace('\n', '')==url:
+                      info = 1
+                      continue
+          if info==0:
+              get_right_url(url, data_info_dict)
+          else:
+              continue
 
 '''匹配正确的电影的演员页面'''
+
+
 def get_right_url(url, data_info_dict):
+
+
     driver = webdriver.PhantomJS(executable_path='./phantomjs')
     driver.get(url)
     character = driver.page_source
@@ -124,6 +123,7 @@ def get_right_url(url, data_info_dict):
             
  '''得到ｕｒｌ页面的演员列表'''
 def get_actors_infor(url):
+
     driver = webdriver.PhantomJS(executable_path='./phantomjs')
     driver.get(url)
     cinematography_info_data = driver.page_source
@@ -140,6 +140,7 @@ def get_actors_infor(url):
     return elem
     
   def get_worker_list(url, data_info_dict):
+  
     driver = webdriver.PhantomJS(executable_path='./phantomjs')
     driver.get(url)
     cinematography_info_data = driver.page_source
@@ -184,3 +185,33 @@ get_find_url()
 
 
 
+# -*- coding: utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+from pymongo import MongoClient
+
+
+
+
+def save_data_to_mongodb():
+
+    '''读取文件中的数据'''
+    lines = open('./2011/data.txt', 'r').readlines()
+    a = 1
+    for line in lines:
+        line = line.replace('\n','')
+        '''将数据从字符串转成字典'''
+        line = eval(line)
+        # print a
+        # a += 1
+        # print line['_id']
+
+        '''数据导入mongodb'''
+
+        conn = MongoClient('192.168.235.55', 27017)
+        db = conn['admin']
+        db.authenticate("admin", "123456")
+        db = conn['team_behind_sc']
+        table = db['Filmmaker_page']
+        table.insert(line)
